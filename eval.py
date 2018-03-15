@@ -40,19 +40,25 @@ def eval():
             ## Get model name
             mname = open(hp.logdir + '/checkpoint', 'r').read().split('"')[1] # model name
             ## Inference
+            totalTransNum = 0
             if not os.path.exists('results'): os.mkdir('results')
             with codecs.open('results/'+mname+'.trans', 'w', 'utf8') as tfout:
                 with codecs.open("results/" + mname, "w", "utf-8") as fout:
                     list_of_refs, hypotheses = [], []
-                    for i in range(len(X) // hp.batch_size):
-
+                    for i in range((len(X) // hp.batch_size) + 1):
                         ### Get mini-batches
-                        x = X[i*hp.batch_size: (i+1)*hp.batch_size]
-                        sources = Sources[i*hp.batch_size: (i+1)*hp.batch_size]
-                        targets = Targets[i*hp.batch_size: (i+1)*hp.batch_size]
+                        batchEnd = (i+1)*hp.batch_size
+                        readlBatchSize = hp.batch_size
+                        if batchEnd > len(X):
+                            readlBatchSize = hp.batch_size - (batchEnd - len(X))
+                            batchEnd = len(X)
 
+                        x = X[i*hp.batch_size: batchEnd]
+                        sources = Sources[i*hp.batch_size: batchEnd]
+                        targets = Targets[i*hp.batch_size: batchEnd]
+                        totalTransNum += len(sources)
                         ### Autoregressive inference
-                        preds = np.zeros((hp.batch_size, hp.maxlen), np.int32)
+                        preds = np.zeros((readlBatchSize, hp.maxlen), np.int32)
                         for j in range(hp.maxlen):
                             _preds = sess.run(g.preds, {g.x: x, g.y: preds})
                             preds[:, j] = _preds[:, j]
@@ -63,7 +69,6 @@ def eval():
                             fout.write("- source: " + source +"\n")
                             fout.write("- expected: " + target + "\n")
                             fout.write("- got: " + got + "\n\n")
-                            fout.flush()
                             tfout.write(got)
                             tfout.write('\n')
 
@@ -77,6 +82,9 @@ def eval():
                     ## Calculate bleu score
                     score = corpus_bleu(list_of_refs, hypotheses)
                     fout.write("Bleu Score = " + str(100*score))
+                    fout.write('\n')
+
+                    print('totalTransNum', totalTransNum, 'Bleu', str(100*score))
                                           
 if __name__ == '__main__':
     eval()
