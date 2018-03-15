@@ -62,8 +62,8 @@ class Graph():
                                             training=tf.convert_to_tensor(is_training))
                 
                 ## Blocks
-                for i in range(hp.num_blocks):
-                    with tf.variable_scope("num_blocks_{}".format(i)):
+                for i in range(hp.encoder_num_blocks or hp.num_blocks):
+                    with tf.variable_scope("encoder_num_blocks_{}".format(i)):
                         ### Multihead Attention
                         self.enc = multihead_attention(queries=self.enc, 
                                                         keys=self.enc, 
@@ -107,8 +107,8 @@ class Graph():
                                             training=tf.convert_to_tensor(is_training))
                 
                 ## Blocks
-                for i in range(hp.num_blocks):
-                    with tf.variable_scope("num_blocks_{}".format(i)):
+                for i in range(hp.decoder_num_blocks or hp.num_blocks):
+                    with tf.variable_scope("decoder_num_blocks_{}".format(i)):
                         ## Multihead Attention ( self-attention)
                         self.dec = multihead_attention(queries=self.dec, 
                                                         keys=self.dec, 
@@ -134,7 +134,7 @@ class Graph():
                 
             # Final linear projection
             self.logits = tf.layers.dense(self.dec, len(en2idx))
-            self.preds = tf.to_int32(tf.arg_max(self.logits, dimension=-1))
+            self.preds = tf.to_int32(tf.argmax(self.logits, axis=-1))
             self.istarget = tf.to_float(tf.not_equal(self.y, 0))
             self.acc = tf.reduce_sum(tf.to_float(tf.equal(self.preds, self.y))*self.istarget)/ (tf.reduce_sum(self.istarget))
             tf.summary.scalar('acc', self.acc)
@@ -166,15 +166,19 @@ if __name__ == '__main__':
     sv = tf.train.Supervisor(graph=g.graph, 
                              logdir=hp.logdir,
                              save_model_secs=0)
-    with sv.managed_session() as sess:
-        for epoch in range(1, hp.num_epochs+1): 
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
+    #with tf.device('/gpu:0'):
+    total_step = 0 # 训练总batch步数
+    with sv.managed_session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        for epoch in range(1, hp.num_epochs+1):
             if sv.should_stop(): break
             for step in tqdm(range(g.num_batch), total=g.num_batch, ncols=70, leave=False, unit='b'):
                 sess.run(g.train_op)
-                
-            gs = sess.run(g.global_step)   
+                total_step += 1
+
+            gs = sess.run(g.global_step)
             sv.saver.save(sess, hp.logdir + '/model_epoch_%02d_gs_%d' % (epoch, gs))
-    
+
     print("Done")    
     
 
