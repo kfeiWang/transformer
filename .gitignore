@@ -102,5 +102,5 @@ corpora
 logdir
 preprocessed
 
-./idea
+.idea/
 tmp/
