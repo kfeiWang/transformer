@@ -22,11 +22,11 @@ class Hyperparams:
     maxlen = 50 # Maximum number of words in a sentence. alias = T.
                 # Feel free to increase this if you are ambitious.
     min_cnt = 0 # words whose occurred less than min_cnt are encoded as <UNK>.
-    eval_step = 1000
+    eval_step = 1000 # use dev eval models TODO
     hidden_units = 512 # alias = C
-    num_blocks = 3 # number of encoder/decoder blocks
-    encoder_num_blocks = 6 # number of encoder blocks, will cover num_blocks. 0 will unused this
-    decoder_num_blocks = 3 # number of decoder blocks, will cover num_blocks. 0 will unused this
+    num_blocks = 6 # number of encoder/decoder blocks
+    encoder_num_blocks = None # number of encoder blocks, will cover num_blocks. 0 will unused this
+    decoder_num_blocks = None # number of decoder blocks, will cover num_blocks. 0 will unused this
     num_epochs = 100
     num_heads = 8
     dropout_rate = 0.1
