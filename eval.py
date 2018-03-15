@@ -28,11 +28,11 @@ def eval():
     de2idx, idx2de = load_de_vocab()
     en2idx, idx2en = load_en_vocab()
 #     X, Sources, Targets = X[:33], Sources[:33], Targets[:33]
-     
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
     # Start session         
     with g.graph.as_default():    
         sv = tf.train.Supervisor()
-        with sv.managed_session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+        with sv.managed_session(config=tf.ConfigProto(allow_soft_placement=True, gpu_options=gpu_options)) as sess:
             ## Restore parameters
             sv.saver.restore(sess, tf.train.latest_checkpoint(hp.logdir))
             print("Restored!")
