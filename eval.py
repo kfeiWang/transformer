@@ -27,8 +27,6 @@ def eval():
     X, Sources, Targets = load_test_data()
     de2idx, idx2de = load_de_vocab()
     en2idx, idx2en = load_en_vocab()
-    print('sources.................')
-    print(Sources)
 #     X, Sources, Targets = X[:33], Sources[:33], Targets[:33]
      
     # Start session         
