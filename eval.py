@@ -28,7 +28,7 @@ def eval():
     de2idx, idx2de = load_de_vocab()
     en2idx, idx2en = load_en_vocab()
 #     X, Sources, Targets = X[:33], Sources[:33], Targets[:33]
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
     # Start session         
     with g.graph.as_default():    
         sv = tf.train.Supervisor()
